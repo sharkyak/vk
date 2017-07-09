@@ -1,11 +1,12 @@
 var express = require('express');
-var app = express();
 const VK = require('vk-io');
 require('dotenv').config();
 
+var app = express();
+
 app.get('/', function (req, res) {
   res.send('It Works!!!!')
-})
+});
 
 app.get('/vkls/:id', function (req, res) {
   let idu = req.params.id;
@@ -34,9 +35,24 @@ app.get('/vkls/:id', function (req, res) {
     .then(resp => {
       const users = resp.items;
       const randomId = users[Math.floor(Math.random()*users.length)];
-      console.log(randomId);
+      console.log('randomId', randomId);
 
-      res.send('Random friend Id is: ' + randomId);
+      getUserInfo(randomId, access_token);
+    })
+    .catch(error => console.error(error));
+  }
+
+  function getUserInfo(id, access_token) {
+    vk.api.users.get({
+      user_ids: id,
+      fields: 'first_name, last_name, photo_100',
+      access_token
+    })
+    .then(resp => {
+      resp = resp[0];
+      console.log(resp.first_name, resp.last_name, resp.photo_100);
+
+      res.send('Random friend is: ' + resp.first_name + ' ' + resp.last_name + ' with avatar ' + resp.photo_100);
     })
     .catch(error => console.error(error));
   }
