@@ -1,32 +1,45 @@
+var express = require('express');
+var app = express();
 const VK = require('vk-io');
 require('dotenv').config();
 
-const vk = new VK({
-    login: process.env.VK_USER,
-    pass: process.env.VK_PASS
+app.get('/', function (req, res) {
+  res.send('It Works!!!!')
+})
+
+app.get('/vkls/:id', function (req, res) {
+  let idu = req.params.id;
+
+  const vk = new VK({
+      login: process.env.VK_USER,
+      pass: process.env.VK_PASS
+  });
+
+  const auth = vk.auth.windows();
+
+  auth.run()
+  .then(account => {
+      console.log('Authorised user:',account.user);
+      getFriends(account.token);
+  })
+  .catch(error => console.error(error));
+
+  function getFriends(access_token) {
+    console.log('Getting friends of id', idu);
+
+    vk.api.friends.get({
+      user_id: idu,
+      access_token
+    })
+    .then(resp => {
+      const users = resp.items;
+      const randomId = users[Math.floor(Math.random()*users.length)];
+      console.log(randomId);
+
+      res.send('Random friend Id is: ' + randomId);
+    })
+    .catch(error => console.error(error));
+  }
 });
 
-const auth = vk.auth.windows();
-
-auth.run()
-.then((account) => {
-    console.log('User:',account.user);
-    console.log('Token:',account.token);
-    console.log('Expires:',account.expires);
-
-    getWall(account.token);
-})
-.catch(error => console.error(error));
-
-
-function getWall(access_token) {
-  console.log('Getting first 5 wall posts of group', process.env.GROUP_ID);
-
-  vk.api.wall.get({
-    domain: process.env.GROUP_ID,
-    count: 5,
-    access_token
-  })
-  .then(notes => console.log(notes))
-  .catch(error => console.error(error));
-}
+app.listen(3000);
