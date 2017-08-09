@@ -1,29 +1,29 @@
-var express = require('express');
+const express = require('express');
 const VK = require('vk-io');
 require('dotenv').config();
 
-var app = express();
+const app = express();
 
-app.get('/', function (req, res) {
-  res.send('It Works!!!!')
+app.get('/', (req, res) => {
+  res.send('It Works!!!!');
 });
 
-app.get('/vkls/:id', function (req, res) {
-  let idu = req.params.id;
+app.get('/vkls/:id', (req, res) => {
+  const idu = req.params.id;
 
   const vk = new VK({
-      login: process.env.VK_USER,
-      pass: process.env.VK_PASS
+    login: process.env.VK_USER,
+    pass: process.env.VK_PASS
   });
 
   const auth = vk.auth.windows();
 
   auth.run()
-  .then(account => {
-      console.log('Authorised user:',account.user);
+    .then(account => {
+      console.log('Authorised user:', account.user);
       getFriends(account.token);
-  })
-  .catch(error => console.error(error));
+    })
+    .catch(error => console.error(error));
 
   function getFriends(access_token) {
     console.log('Getting friends of id', idu);
@@ -32,14 +32,14 @@ app.get('/vkls/:id', function (req, res) {
       user_id: idu,
       access_token
     })
-    .then(resp => {
-      const users = resp.items;
-      const randomId = users[Math.floor(Math.random()*users.length)];
-      console.log('randomId', randomId);
+      .then(resp => {
+        const users = resp.items;
+        const randomId = users[Math.floor(Math.random() * users.length)];
+        console.log('randomId', randomId);
 
-      getUserInfo(randomId, access_token);
-    })
-    .catch(error => console.error(error));
+        getUserInfo(randomId, access_token);
+      })
+      .catch(error => console.error(error));
   }
 
   function getUserInfo(id, access_token) {
@@ -48,13 +48,13 @@ app.get('/vkls/:id', function (req, res) {
       fields: 'first_name, last_name, photo_100',
       access_token
     })
-    .then(resp => {
-      resp = resp[0];
-      console.log(resp.first_name, resp.last_name, resp.photo_100);
+      .then(resp => {
+        resp = resp[0];
+        console.log(resp.first_name, resp.last_name, resp.photo_100);
 
-      res.send('Random friend is: ' + resp.first_name + ' ' + resp.last_name + ' with avatar ' + resp.photo_100);
-    })
-    .catch(error => console.error(error));
+        res.send(`Random friend is: ${resp.first_name} ${resp.last_name} with avatar ${resp.photo_100}`);
+      })
+      .catch(error => console.error(error));
   }
 });
 
