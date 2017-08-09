@@ -31,20 +31,25 @@ function getFriends(idu, res) {
       const randomId = users[Math.floor(Math.random() * users.length)];
       console.log('randomId', randomId);
 
-      getUserInfo(randomId, res);
+      getUserInfo(idu, randomId, res);
     })
     .catch(error => console.error(error));
 }
 
-function getUserInfo(id, res) {
+function getUserInfo(idu, id, res) {
   vk.api.users.get({
     user_ids: id,
-    fields: 'first_name, last_name, photo_100',
+    fields: 'first_name, last_name, photo_100, deactivated',
     access_token: accessToken
   })
     .then(resp => {
       resp = resp[0];
-      console.log(resp.first_name, resp.last_name, resp.photo_100);
+      console.log(resp.deactivated, resp.first_name, resp.last_name, resp.photo_100);
+
+      if (resp.deactivated === 'deleted' || resp.deactivated === 'banned') {
+        getFriends(idu, res);
+        return;
+      }
 
       res.send(`Random friend is: ${resp.first_name} ${resp.last_name} with avatar ${resp.photo_100}`);
     })
